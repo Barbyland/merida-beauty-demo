@@ -1,5 +1,5 @@
-import { MeridaDemo } from "./MeridaDemo";
+import { MeridaSite } from "./MeridaSite";
 
 export default function Home() {
-  return <MeridaDemo />;
+  return <MeridaSite />;
 }

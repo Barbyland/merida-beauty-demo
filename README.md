@@ -1,10 +1,10 @@
-# MERIDA Beauty Studio — demo web
+# MERIDA Beauty Studio — proyecto web
 
 Landing page responsive para un salón de belleza de Hurlingham. El proyecto fue
 creado como caso de portfolio y presenta los servicios, el equipo, trabajos,
 ubicación y una simulación de reserva que prepara una consulta por WhatsApp.
 
-> La disponibilidad es ilustrativa. La demo no crea turnos ni guarda datos de
+> La disponibilidad es ilustrativa. Esta versión no crea turnos ni guarda datos de
 > clientes.
 
 ## Tecnologías

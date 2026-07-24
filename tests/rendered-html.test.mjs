@@ -5,11 +5,14 @@ import test from "node:test";
 const readExportedHome = () =>
   readFile(new URL("../out/index.html", import.meta.url), "utf8");
 
-test("renders the MERIDA portfolio demo", async () => {
+test("renders the MERIDA portfolio site", async () => {
   const html = await readExportedHome();
   assert.match(html, /<html[^>]+lang="es"/i);
-  assert.match(html, /<title>MERIDA Beauty Studio \| Demo web<\/title>/i);
-  assert.match(html, /Demo de portfolio/);
+  assert.match(
+    html,
+    /<title>MERIDA Beauty Studio \| Belleza integral<\/title>/i,
+  );
+  assert.match(html, /Proyecto de portfolio/);
   assert.match(html, /Simular reserva/);
   assert.match(html, /5491171079672/);
   assert.doesNotMatch(html, /Building your site|Starter Project/i);
@@ -18,13 +21,14 @@ test("renders the MERIDA portfolio demo", async () => {
 test("discloses illustrative availability and prepares WhatsApp", async () => {
   const html = await readExportedHome();
   const component = await readFile(
-    new URL("../app/MeridaDemo.tsx", import.meta.url),
+    new URL("../app/MeridaSite.tsx", import.meta.url),
     "utf8",
   );
 
-  assert.match(html, /La reserva es una simulación y no genera un turno real/);
-  assert.match(html, /Disponibilidad de ejemplo/);
+  assert.match(html, /La solicitud es ilustrativa y se confirma por WhatsApp/);
+  assert.match(html, /Disponibilidad orientativa/);
   assert.match(component, /Confirmar por WhatsApp/);
   assert.match(component, /no crea un turno automático/);
-  assert.match(component, /vi la demo web y quisiera consultar disponibilidad/);
+  assert.match(component, /quisiera consultar disponibilidad/);
+  assert.doesNotMatch(component, /fecha de ejemplo|\/07 a las/);
 });

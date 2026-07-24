@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- Static export uses pre-compressed local assets. */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 type Category = "Manos" | "Pies" | "Cejas" | "Pestañas";
 
@@ -28,13 +28,46 @@ const services: Service[] = [
   { name: "Volumen 2D / 3D", category: "Pestañas", price: "desde $25.000", duration: "150 min", professionals: ["Sofía"] },
 ];
 
-const dates = [
-  { day: "MAR", number: "28" },
-  { day: "MIÉ", number: "29" },
-  { day: "JUE", number: "30" },
-  { day: "VIE", number: "31" },
-  { day: "SÁB", number: "01" },
-];
+type BookingDate = {
+  iso: string;
+  day: string;
+  number: string;
+  fullLabel: string;
+};
+
+const subscribeToClient = () => () => {};
+
+function getUpcomingBookingDates(reference = new Date()): BookingDate[] {
+  const upcomingDates: BookingDate[] = [];
+  const cursor = new Date(reference);
+  cursor.setHours(12, 0, 0, 0);
+  cursor.setDate(cursor.getDate() + 1);
+
+  while (upcomingDates.length < 5) {
+    const weekday = cursor.getDay();
+
+    if (weekday >= 2 && weekday <= 6) {
+      const year = cursor.getFullYear();
+      const month = String(cursor.getMonth() + 1).padStart(2, "0");
+      const dayNumber = String(cursor.getDate()).padStart(2, "0");
+      const day = new Intl.DateTimeFormat("es-AR", { weekday: "short" })
+        .format(cursor)
+        .replace(".", "")
+        .toUpperCase();
+
+      upcomingDates.push({
+        iso: `${year}-${month}-${dayNumber}`,
+        day,
+        number: dayNumber,
+        fullLabel: `${dayNumber}/${month}/${year}`,
+      });
+    }
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return upcomingDates;
+}
 
 const times = ["10:00", "11:30", "15:00", "16:30", "18:00"];
 
@@ -86,15 +119,24 @@ const categories = [
   },
 ];
 
-export function MeridaDemo() {
+export function MeridaSite() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [category, setCategory] = useState<Category>("Manos");
   const [serviceName, setServiceName] = useState("Esmaltado semipermanente");
   const [professional, setProfessional] = useState("Cualquier profesional");
-  const [date, setDate] = useState("29");
+  const [date, setDate] = useState("");
   const [time, setTime] = useState("15:00");
   const [confirmed, setConfirmed] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const isClient = useSyncExternalStore(
+    subscribeToClient,
+    () => true,
+    () => false,
+  );
+  const dates = useMemo(
+    () => (isClient ? getUpcomingBookingDates() : []),
+    [isClient],
+  );
 
   const categoryServices = useMemo(
     () => services.filter((service) => service.category === category),
@@ -105,6 +147,7 @@ export function MeridaDemo() {
     services.find((service) => service.name === serviceName) ?? categoryServices[0];
 
   const availableProfessionals = selectedService.professionals;
+  const selectedDate = dates.find((item) => item.iso === date) ?? dates[0];
 
   function selectCategory(nextCategory: Category) {
     const firstService = services.find((service) => service.category === nextCategory);
@@ -130,8 +173,8 @@ export function MeridaDemo() {
   return (
     <main>
       <div className="demo-ribbon">
-        <span>Demo de portfolio</span>
-        <p>La reserva es una simulación y no genera un turno real.</p>
+        <span>Proyecto de portfolio</span>
+        <p>La solicitud es ilustrativa y se confirma por WhatsApp.</p>
       </div>
 
       <header className="site-header">
@@ -325,7 +368,7 @@ export function MeridaDemo() {
 
       <section className="booking-section" id="reservar">
         <div className="booking-intro">
-          <p className="eyebrow light">Demo de reserva</p>
+          <p className="eyebrow light">Solicitud de turno</p>
           <h2>Prepará tu solicitud,<br /><em>en pocos pasos.</em></h2>
           <p>
             Elegí el servicio, la profesional y el horario que mejor se adapte a vos.
@@ -344,13 +387,13 @@ export function MeridaDemo() {
               <p className="eyebrow">Solicitud preparada</p>
               <h3>¡Tu turno está casi listo!</h3>
               <p>
-                {selectedService.name} · fecha de ejemplo {date}/07 · {time} h<br />
+                {selectedService.name} · {selectedDate?.fullLabel ?? "Fecha a confirmar"} · {time} h<br />
                 {professional}
               </p>
               <a
                 className="button"
                 href={`https://wa.me/5491171079672?text=${encodeURIComponent(
-                  `Hola MERIDA, vi la demo web y quisiera consultar disponibilidad para ${selectedService.name} con ${professional}. Mi preferencia orientativa es el ${date}/07 a las ${time} h.`,
+                  `Hola MERIDA, quisiera consultar disponibilidad para ${selectedService.name} con ${professional}. Mi preferencia es el ${selectedDate?.fullLabel ?? "día a confirmar"} a las ${time} h.`,
                 )}`}
               >
                 Confirmar por WhatsApp
@@ -364,7 +407,7 @@ export function MeridaDemo() {
             <>
               <div className="booking-topline">
                 <span>Agendá tu cita</span>
-                <small>Disponibilidad de ejemplo</small>
+                <small>Disponibilidad orientativa</small>
               </div>
 
               <fieldset>
@@ -428,10 +471,11 @@ export function MeridaDemo() {
                   {dates.map((item) => (
                     <button
                       type="button"
-                      key={item.number}
-                      className={date === item.number ? "selected" : ""}
-                      aria-pressed={date === item.number}
-                      onClick={() => setDate(item.number)}
+                      key={item.iso}
+                      className={selectedDate?.iso === item.iso ? "selected" : ""}
+                      aria-label={`${item.day} ${item.fullLabel}`}
+                      aria-pressed={selectedDate?.iso === item.iso}
+                      onClick={() => setDate(item.iso)}
                     >
                       <small>{item.day}</small>
                       <b>{item.number}</b>
@@ -459,7 +503,12 @@ export function MeridaDemo() {
                   <strong>{selectedService.name}</strong>
                   <span>{selectedService.duration} · {selectedService.price}</span>
                 </div>
-                <button className="button" type="button" onClick={() => setConfirmed(true)}>
+                <button
+                  className="button"
+                  type="button"
+                  disabled={!selectedDate}
+                  onClick={() => setConfirmed(true)}
+                >
                   Preparar WhatsApp
                 </button>
               </div>
@@ -509,8 +558,7 @@ export function MeridaDemo() {
           ))}
         </div>
         <p className="demo-note">
-          Los retratos son imágenes ilustrativas generadas para esta demo. “Sofía”
-          es un nombre provisional.
+          Los retratos son imágenes ilustrativas. “Sofía” es un nombre provisional.
         </p>
       </section>
 
@@ -613,7 +661,7 @@ export function MeridaDemo() {
           <a href="https://www.instagram.com/meridastudio_/" target="_blank" rel="noreferrer">Instagram ↗</a>
           <a href="https://wa.me/5491171079672">WhatsApp ↗</a>
         </div>
-        <small>© 2026 MERIDA Beauty Studio · Demo conceptual para portfolio</small>
+        <small>© 2026 MERIDA Beauty Studio · Proyecto conceptual para portfolio</small>
       </footer>
 
       <a

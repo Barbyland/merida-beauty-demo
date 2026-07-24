@@ -7,16 +7,16 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "MERIDA Beauty Studio | Demo web",
+  title: "MERIDA Beauty Studio | Belleza integral",
   description:
-    "Demo conceptual para MERIDA Beauty Studio: servicios, equipo, ubicación y solicitud de turnos por WhatsApp.",
+    "Servicios, equipo, ubicación y solicitud de turnos por WhatsApp para MERIDA Beauty Studio.",
   icons: {
     icon: "/logo-merida.jpg",
     shortcut: "/logo-merida.jpg",
   },
   openGraph: {
     title: "MERIDA Beauty Studio",
-    description: "Tu momento. Tu belleza. Demo web para portfolio.",
+    description: "Tu momento. Tu belleza. Manicura, pedicura, cejas y pestañas.",
     type: "website",
     images: [
       {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "MERIDA Beauty Studio",
-    description: "Tu momento. Tu belleza. Demo web para portfolio.",
+    description: "Tu momento. Tu belleza. Manicura, pedicura, cejas y pestañas.",
     images: ["/og.jpg"],
   },
 };
