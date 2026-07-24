@@ -13,7 +13,7 @@ test("renders the MERIDA portfolio site", async () => {
     /<title>MERIDA Beauty Studio \| Belleza integral<\/title>/i,
   );
   assert.match(html, /Proyecto de portfolio/);
-  assert.match(html, /Simular reserva/);
+  assert.match(html, /Solicitar turno/);
   assert.match(html, /5491171079672/);
   assert.doesNotMatch(html, /Building your site|Starter Project/i);
 });

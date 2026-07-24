@@ -195,7 +195,7 @@ export function MeridaSite() {
           <a href="#estudio" onClick={() => setMenuOpen(false)}>El estudio</a>
           <a href="#contacto" onClick={() => setMenuOpen(false)}>Contacto</a>
         </nav>
-        <a className="button button-small desktop-cta" href="#reservar">Simular reserva</a>
+        <a className="button button-small desktop-cta" href="#reservar">Solicitar turno</a>
         <button
           className="menu-button"
           type="button"
@@ -218,7 +218,7 @@ export function MeridaSite() {
             pensado para que te sientas cuidada.
           </p>
           <div className="hero-actions">
-            <a className="button" href="#reservar">Simular reserva</a>
+            <a className="button" href="#reservar">Solicitar turno</a>
             <a className="text-link" href="#servicios">Explorar servicios <span>↗</span></a>
           </div>
           <div className="hero-facts">
@@ -671,7 +671,7 @@ export function MeridaSite() {
       >
         WA
       </a>
-      <a className="mobile-booking-bar" href="#reservar">Simular reserva <span>↗</span></a>
+      <a className="mobile-booking-bar" href="#reservar">Solicitar turno <span>↗</span></a>
     </main>
   );
 }
