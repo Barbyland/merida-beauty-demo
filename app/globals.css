@@ -963,16 +963,23 @@ legend {
 }
 
 .team-portrait img {
+  --portrait-scale: 1;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center 20%;
   filter: saturate(0.85);
+  transform: scale(var(--portrait-scale));
   transition: transform 450ms ease;
 }
 
+.team-portrait.tone-3 img {
+  --portrait-scale: 1.16;
+  object-position: center 16%;
+}
+
 .team-card:hover .team-portrait img {
-  transform: scale(1.025);
+  transform: scale(calc(var(--portrait-scale) + 0.025));
 }
 
 .team-portrait::after {
