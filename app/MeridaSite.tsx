@@ -149,9 +149,9 @@ export function MeridaSite() {
 
   const availableProfessionals = selectedService.professionals;
   const selectedDate = dates.find((item) => item.iso === date) ?? dates[0];
-  // La integración de ensayo solo se muestra en esta computadora.
-  // La versión pública conserva el recorrido de portfolio hasta autorizar su publicación.
-  const calendarDemo = isClient && ["127.0.0.1", "localhost"].includes(window.location.hostname);
+  // El enlace de ensayo se compila por separado; main conserva la demo pública.
+  const calendarDemo = process.env.NEXT_PUBLIC_CALENDAR_ONLINE === "true" ||
+    isClient && ["127.0.0.1", "localhost"].includes(window.location.hostname);
 
   function selectCategory(nextCategory: Category) {
     const firstService = services.find((service) => service.category === nextCategory);

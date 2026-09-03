@@ -31,6 +31,21 @@ peticiones sin sesión de Google, todas las operaciones exigen esa clave.
 El puente almacena la conexión en `.booking-demo/config.json`, ignorado por Git.
 La configuración se guarda solamente después de validar la conexión real.
 
+## Rama de ensayo online
+
+La rama `codex/calendar-online-demo` añade una Netlify Function para probar desde
+otros dispositivos sin modificar la web pública de `main`. La vista previa usa
+un dominio separado y exige una clave antes de consultar horarios, crear una
+solicitud o abrir el panel. URL de Apps Script, secreto de conexión, clave de la
+demo y secreto de sesión se configuran exclusivamente como variables secretas
+del despliegue; nunca se guardan en Git ni se incorporan al JavaScript público.
+
+El acceso dura 12 horas en cada navegador. El panel y las operaciones de agenda
+validan la sesión, el origen y un token CSRF; la función limita solicitudes por
+IP y dominio. El formulario sigue trabajando únicamente con Ludmila y Pricila.
+Sofía aparece con sus servicios, pero sin horarios hasta crear y conectar su
+calendario de prueba.
+
 ## Comportamiento
 
 - Horarios de ensayo: martes a sábado, 10–13 y 15–19 (Argentina). Servicios

@@ -9,7 +9,8 @@
     "dev": "next dev",
     "demo:calendar": "node integration/demo-server.mjs",
     "test:calendar": "node --test tests/calendar-integration.test.mjs",
-    "build": "next build",
+    "build": "node scripts/prepare-online.mjs && next build",
+    "test:online": "node --test tests/calendar-online.test.mjs",
     "start": "next start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint ."

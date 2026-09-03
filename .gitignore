@@ -52,3 +52,6 @@ next-env.d.ts
 
 # Local-only Google Calendar connection secret
 /.booking-demo/
+/.netlify/
+/public/booking-admin.js
+/public/booking-admin.css

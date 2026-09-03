@@ -1,10 +1,11 @@
 const csrf = document.querySelector('meta[name="csrf-token"]').content;
+const apiBase = document.querySelector('meta[name="api-base"]')?.content || '';
 const status = document.querySelector('#status');
 const container = document.querySelector('#bookings');
 const labels = { pending: 'Pendiente', confirmed: 'Confirmado', rejected: 'Rechazado', creating: 'Resultado por verificar' };
 
 async function call(path, data = {}) {
-  const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Demo-CSRF': csrf }, body: JSON.stringify(data) });
+  const response = await fetch(apiBase + path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Demo-CSRF': csrf }, body: JSON.stringify(data) });
   const result = await response.json();
   if (!response.ok || !result.ok) throw new Error(result.error || 'No se pudo completar la operación.');
   return result;
@@ -72,7 +73,7 @@ async function load() {
 }
 
 document.querySelector('#refresh').addEventListener('click', load);
-document.querySelector('#copy-code').addEventListener('click', async () => {
+document.querySelector('#copy-code')?.addEventListener('click', async () => {
   try {
     const response = await fetch('/Code.gs');
     if (!response.ok) throw new Error('No se pudo leer el código.');
@@ -80,7 +81,7 @@ document.querySelector('#copy-code').addEventListener('click', async () => {
     status.textContent = 'Código copiado. Pegalo en Código.gs dentro del proyecto de Apps Script.';
   } catch { status.textContent = 'Abrí el enlace al código y copialo manualmente.'; }
 });
-document.querySelector('#connect').addEventListener('submit', async event => {
+document.querySelector('#connect')?.addEventListener('submit', async event => {
   event.preventDefault();
   const button = event.currentTarget.querySelector('button');
   const feedback = document.querySelector('#connect-status');
@@ -108,7 +109,7 @@ document.querySelector('#connect').addEventListener('submit', async event => {
   }
   finally { button.disabled = false; button.textContent = 'Verificar y conectar'; }
 });
-fetch('/public/config').then(r => r.json()).then(config => {
+fetch(apiBase + '/public/config').then(r => r.json()).then(config => {
   if (config.connected) load();
-  else { document.querySelector('#setup').open = true; status.textContent = 'La conexión con Google todavía no está configurada.'; }
+  else { const setup = document.querySelector('#setup'); if (setup) setup.open = true; status.textContent = config.loginRequired ? 'La sesión venció. Volvé a entrar al panel.' : 'La conexión con Google todavía no está configurada.'; }
 }).catch(() => { status.textContent = 'No se pudo acceder a la configuración local.'; });

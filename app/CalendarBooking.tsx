@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const API = "http://127.0.0.1:3001";
+const ONLINE = process.env.NEXT_PUBLIC_CALENDAR_ONLINE === "true";
+const API = ONLINE ? "/api" : "http://127.0.0.1:3001";
 const services = [
   ["Manicura", 30, "Manos"], ["Esmaltado semipermanente", 60, "Manos"], ["Kapping nivelación", 75, "Manos"],
   ["Esculpidas", 120, "Manos"], ["Belleza de pies", 45, "Pies"], ["Pies + semipermanente", 75, "Pies"],
@@ -39,6 +40,7 @@ export function CalendarBooking({ initialProfessional, initialService }: { initi
   const [phone, setPhone] = useState("");
   const [connected, setConnected] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [loginRequired, setLoginRequired] = useState(false);
   const [slots, setSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -108,6 +110,7 @@ export function CalendarBooking({ initialProfessional, initialService }: { initi
     const controller = new AbortController();
     fetch(`${API}/public/config`, { signal: controller.signal }).then(r => r.json()).then(result => {
       setConnected(result.connected === true);
+      setLoginRequired(result.loginRequired === true);
       setChecking(false);
     }).catch(() => {
       if (!controller.signal.aborted) { setConnected(false); setChecking(false); }
@@ -176,10 +179,11 @@ export function CalendarBooking({ initialProfessional, initialService }: { initi
       });
       const result = await response.json();
       if (!response.ok || !result.ok) {
-        const definitive = ["INVALID_INPUT", "SLOT_TAKEN", "NOT_CONFIGURED", "UNAUTHORIZED", "WRONG_ACCOUNT", "CALENDAR_UNAVAILABLE"].includes(result.code);
+        const definitive = ["INVALID_INPUT", "SLOT_TAKEN", "NOT_CONFIGURED", "UNAUTHORIZED", "WRONG_ACCOUNT", "CALENDAR_UNAVAILABLE", "LOGIN_REQUIRED"].includes(result.code);
         setUncertain(!definitive);
         if (definitive) attempt.current = null;
         if (result.code === "SLOT_TAKEN") { setTime(""); goToStep(1); setReload(value => value + 1); }
+        if (result.code === "LOGIN_REQUIRED") { setConnected(false); setLoginRequired(true); }
         throw new Error(result.error || "No se pudo completar la solicitud.");
       }
       if (result.booking.status === "creating") {
@@ -220,9 +224,9 @@ export function CalendarBooking({ initialProfessional, initialService }: { initi
     <div id="calendar-form-top" className="calendar-header" tabIndex={-1}><div><p className="calendar-kicker">Un espacio para vos</p><h3>Agendá tu <em>cita.</em></h3></div><span className="calendar-demo-badge">Demo</span></div>
     <p className="calendar-test-note">No genera turnos reales. Usá tu propio WhatsApp para probar.</p>
     {!connected ? <div className="calendar-connection" role="status">
-      <h3>{checking ? "Comprobando conexión…" : "Falta conectar la agenda"}</h3>
-      <p>El formulario podrá consultar horarios y registrar solicitudes cuando autorices la conexión con Google.</p>
-      <a href={`${API}/admin`} target="_blank" rel="noreferrer">Abrir configuración de la prueba ↗</a>
+      <h3>{checking ? "Comprobando conexión…" : loginRequired ? "Entrá a la prueba privada" : "Falta conectar la agenda"}</h3>
+      <p>{ONLINE ? loginRequired ? "Usá la clave de la demo para probar solicitudes y revisar la agenda desde este dispositivo." : "La conexión de esta prueba todavía no está disponible. Volvé a comprobar en un momento." : "El formulario podrá consultar horarios y registrar solicitudes cuando autorices la conexión con Google."}</p>
+      <a href={`${API}/admin${ONLINE ? "?next=booking" : ""}`}>{ONLINE ? "Entrar a la prueba ↗" : "Abrir configuración de la prueba ↗"}</a>
       <button className="reset-button" type="button" onClick={() => setReload(value => value + 1)}>Volver a comprobar</button>
     </div> : <form onSubmit={submit} className="calendar-form" noValidate>
       <ol className="calendar-progress" aria-label="Pasos de la solicitud"><li aria-current={step === 1 ? "step" : undefined} className={step === 1 ? "current" : "complete"}><span>{step === 2 ? "✓" : "01"}</span> Tu cita</li><li aria-current={step === 2 ? "step" : undefined} className={step === 2 ? "current" : ""}><span>02</span> Tus datos</li></ol>

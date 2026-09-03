@@ -1,6 +1,7 @@
 /* MERIDA: integración de ensayo. Solo opera sobre los dos calendarios PRUEBA. */
 const DEMO_OWNER = 'barbydigital.dev@gmail.com';
 const DEMO_ZONE = 'America/Argentina/Buenos_Aires';
+const DEMO_PANEL = 'https://calendar-prueba--merida-beauty-studio-demo.netlify.app/api/admin';
 const DEMO_CALENDARS = {
   Ludmila: 'a526ff1e03bf741867dc7fb979ead01ae1c6878e5d2236c10ad7bd5cdb321621@group.calendar.google.com',
   Pricila: '118d6f5198efee76f8c35fb2bcb6f303278f4ec7dd0286ba07986d38ed8b00ac@group.calendar.google.com',
@@ -149,7 +150,7 @@ function book_(data) {
   if (overlaps_(calendar, span.start, span.end)) throw new Error('SLOT_TAKEN');
   const title = 'PRUEBA · PENDIENTE · ' + data.name.trim() + ' · ' + data.professional + ' · ' + data.service;
   const description = 'ENSAYO MERIDA: no es un turno real.\nWhatsApp: ' + data.phone +
-    '\nSolicitud: ' + data.requestId + '\nRevisar en http://127.0.0.1:3001/admin\nSin confirmación automática a la clienta.';
+    '\nSolicitud: ' + data.requestId + '\nRevisar en ' + DEMO_PANEL + '\nSin confirmación automática a la clienta.';
   // Guardar primero la intención: permite recuperar un resultado incierto sin
   // crear otro evento con el mismo identificador de solicitud.
   const record = { id: data.requestId, fingerprint: fingerprint, status: 'creating', name: data.name.trim(),
@@ -165,7 +166,7 @@ function book_(data) {
   try {
     MailApp.sendEmail({ to: DEMO_OWNER, subject: '[PRUEBA MERIDA] Nueva solicitud: ' + data.name.trim(),
       body: title + '\n' + data.date + ' ' + data.time + ' (Argentina)\nWhatsApp: ' + data.phone +
-        '\n\nRevisar desde esta computadora: http://127.0.0.1:3001/admin\nLa solicitud está pendiente; aún no se envió ningún WhatsApp.' });
+        '\n\nRevisar online: ' + DEMO_PANEL + '\nLa solicitud está pendiente; aún no se envió ningún WhatsApp.' });
     record.notification = 'sent';
   } catch (_) { record.notification = 'failed'; }
   saveRecord_(record);
