@@ -105,7 +105,10 @@ export function createOnlineHandler(env, fetchGoogle = fetch, now = Date.now) {
     const url = new URL(request.url);
     if (!ready || url.origin !== origin) return response(503, { ok: false, connected: false, code: 'NOT_CONFIGURED', error: 'Esta prueba online todavía no está habilitada.' });
     const loggedIn = session(request);
-    if (request.method === 'GET' && url.pathname === '/api/public/config') return response(200, { connected: !!loggedIn, loginRequired: !loggedIn, demo: true });
+    const sameSitePost = () => request.headers.get('origin') === origin ||
+      (!request.headers.get('origin') && (request.headers.get('referer') || '').startsWith(origin + '/')) ||
+      (request.headers.get('origin') === 'null' && (request.headers.get('referer') || '').startsWith(origin + '/'));
+    if (request.method === 'GET' && url.pathname === '/api/public/config') return response(200, { connected: true, loginRequired: false, demo: true });
     if (request.method === 'GET' && url.pathname === '/api/login') {
       const next = url.searchParams.get('next') === 'booking' ? 'booking' : 'admin';
       if (loggedIn) return new Response(null, { status: 303, headers: { ...headers, Location: next === 'booking' ? '/#reservar' : '/api/admin' } });
@@ -118,17 +121,18 @@ export function createOnlineHandler(env, fetchGoogle = fetch, now = Date.now) {
       return page(adminPage(loggedIn.csrf));
     }
     if (request.method !== 'POST') return response(404, { ok: false, error: 'No encontrado.' });
-    if (request.headers.get('origin') !== origin) return response(403, { ok: false, error: 'Solicitud no autorizada.' });
     try {
       if (url.pathname === '/api/login') {
+        if (!sameSitePost()) return response(403, { ok: false, error: 'Solicitud no autorizada.' });
         const data = await body(request, true);
         const next = data.next === 'booking' ? 'booking' : 'admin';
         if (typeof data.password !== 'string' || !equal(data.password, password)) return page(loginPage(next, 'La clave no es correcta.'), 401);
         const payload = Buffer.from(JSON.stringify({ aud: origin, exp: now() + TTL * 1000, nonce: randomBytes(24).toString('base64url') })).toString('base64url');
         return new Response(null, { status: 303, headers: { ...headers, Location: next === 'booking' ? '/#reservar' : '/api/admin', 'Set-Cookie': `${COOKIE}=${payload}.${sign(payload, secret)}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${TTL}` } });
       }
-      if (!loggedIn) return response(401, { ok: false, code: 'LOGIN_REQUIRED', error: 'La sesión venció. Volvé a entrar a la prueba.' });
+      if (request.headers.get('origin') !== origin) return response(403, { ok: false, error: 'Solicitud no autorizada.' });
       if (url.pathname === '/api/logout') {
+        if (!loggedIn) return response(401, { ok: false, code: 'LOGIN_REQUIRED', error: 'La sesión venció. Volvé a entrar a la prueba.' });
         const data = await body(request, true);
         if (!equal(data.csrf || '', loggedIn.csrf)) return response(403, { ok: false, error: 'Solicitud no autorizada.' });
         return new Response(null, { status: 303, headers: { ...headers, Location: '/api/admin', 'Set-Cookie': `${COOKIE}=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0` } });
@@ -136,6 +140,7 @@ export function createOnlineHandler(env, fetchGoogle = fetch, now = Date.now) {
       const actions = { '/api/public/availability': 'availability', '/api/public/book': 'book', '/api/admin/list': 'list', '/api/admin/decide': 'decide', '/api/admin/health': 'health' };
       const action = actions[url.pathname];
       if (!action) return response(404, { ok: false, error: 'No encontrado.' });
+      if (url.pathname.startsWith('/api/admin/') && !loggedIn) return response(401, { ok: false, code: 'LOGIN_REQUIRED', error: 'La sesión venció. Volvé a entrar a la prueba.' });
       if (url.pathname.startsWith('/api/admin/') && !equal(request.headers.get('x-demo-csrf') || '', loggedIn.csrf)) return response(403, { ok: false, error: 'Solicitud no autorizada.' });
       return response(200, await google(action, await body(request)));
     } catch (error) {

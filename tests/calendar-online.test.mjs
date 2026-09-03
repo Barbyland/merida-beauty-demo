@@ -21,10 +21,10 @@ async function login(handler, next = 'admin') {
   return result.headers.get('set-cookie').split(';')[0];
 }
 
-test('requires a private session and never exposes integration secrets', async () => {
+test('keeps booking public, protects the owner panel and never exposes integration secrets', async () => {
   const handler = createOnlineHandler(env, async () => { throw new Error('should not call Google'); });
   const config = await handler(request('/api/public/config'));
-  assert.deepEqual(await config.json(), { connected: false, loginRequired: true, demo: true });
+  assert.deepEqual(await config.json(), { connected: true, loginRequired: false, demo: true });
   const panel = await handler(request('/api/admin'));
   const text = await panel.text();
   assert.equal(panel.status, 200);
@@ -48,19 +48,27 @@ test('login creates a signed, host-bound session', async () => {
   const config = await handler(request('/api/public/config', { headers: { Cookie: cookie } }));
   assert.deepEqual(await config.json(), { connected: true, loginRequired: false, demo: true });
   const tampered = cookie.slice(0, -1) + (cookie.endsWith('a') ? 'b' : 'a');
-  const invalid = await handler(request('/api/public/config', { headers: { Cookie: tampered } }));
-  assert.equal((await invalid.json()).connected, false);
+  const invalid = await handler(request('/api/admin/list', { method: 'POST', headers: { Origin: origin, Cookie: tampered, 'Content-Type': 'application/json' }, body: '{}' }));
+  assert.equal(invalid.status, 401);
 });
 
-test('same-origin session forwards only allowlisted booking fields', async () => {
+test('accepts a same-site mobile form login when Origin is null', async () => {
+  const handler = createOnlineHandler(env, async () => Response.json({ ok: true }));
+  const result = await handler(request('/api/login', {
+    method: 'POST', headers: { Origin: 'null', Referer: origin + '/api/admin', 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ password: env.MERIDA_DEMO_PASSWORD, next: 'admin' }),
+  }));
+  assert.equal(result.status, 303);
+});
+
+test('public booking forwards only allowlisted booking fields', async () => {
   let forwarded;
   const handler = createOnlineHandler(env, async (_url, options) => {
     forwarded = JSON.parse(options.body);
     return Response.json({ ok: true, booking: { id: forwarded.requestId, status: 'pending' } });
   });
-  const cookie = await login(handler);
   const fields = { requestId: '11111111-1111-1111-1111-111111111111', name: 'Prueba', phone: '+5491100000000', professional: 'Ludmila', service: 'Manicura', date: '2026-09-05', time: '10:00', action: 'decide', secret: 'attacker', endpoint: 'https://evil.test' };
-  const result = await handler(request('/api/public/book', { method: 'POST', headers: { Origin: origin, Cookie: cookie, 'Content-Type': 'application/json' }, body: JSON.stringify(fields) }));
+  const result = await handler(request('/api/public/book', { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify(fields) }));
   assert.equal(result.status, 200);
   assert.equal(forwarded.action, 'book');
   assert.equal(forwarded.secret, env.MERIDA_APPS_SCRIPT_SECRET);
