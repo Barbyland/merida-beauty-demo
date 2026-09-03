@@ -37,6 +37,7 @@ test('direct login link shows the password form instead of an authorization erro
   const result = await handler(request('/api/login?next=booking'));
   const text = await result.text();
   assert.equal(result.status, 200);
+  assert.equal(result.headers.get('referrer-policy'), 'same-origin');
   assert.match(text, /Entrar a la prueba/);
   assert.match(text, /name="next" value="booking"/);
 });
