@@ -105,6 +105,11 @@ export function createOnlineHandler(env, fetchGoogle = fetch, now = Date.now) {
     if (!ready || url.origin !== origin) return response(503, { ok: false, connected: false, code: 'NOT_CONFIGURED', error: 'Esta prueba online todavía no está habilitada.' });
     const loggedIn = session(request);
     if (request.method === 'GET' && url.pathname === '/api/public/config') return response(200, { connected: !!loggedIn, loginRequired: !loggedIn, demo: true });
+    if (request.method === 'GET' && url.pathname === '/api/login') {
+      const next = url.searchParams.get('next') === 'booking' ? 'booking' : 'admin';
+      if (loggedIn) return new Response(null, { status: 303, headers: { ...headers, Location: next === 'booking' ? '/#reservar' : '/api/admin' } });
+      return page(loginPage(next));
+    }
     if (request.method === 'GET' && url.pathname === '/api/admin') {
       const next = url.searchParams.get('next') === 'booking' ? 'booking' : 'admin';
       if (!loggedIn) return page(loginPage(next));

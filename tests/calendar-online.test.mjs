@@ -32,6 +32,15 @@ test('requires a private session and never exposes integration secrets', async (
   assert.doesNotMatch(text, new RegExp(env.MERIDA_APPS_SCRIPT_SECRET));
 });
 
+test('direct login link shows the password form instead of an authorization error', async () => {
+  const handler = createOnlineHandler(env, async () => { throw new Error('should not call Google'); });
+  const result = await handler(request('/api/login?next=booking'));
+  const text = await result.text();
+  assert.equal(result.status, 200);
+  assert.match(text, /Entrar a la prueba/);
+  assert.match(text, /name="next" value="booking"/);
+});
+
 test('login creates a signed, host-bound session', async () => {
   const handler = createOnlineHandler(env, async () => Response.json({ ok: true }));
   const cookie = await login(handler, 'booking');
