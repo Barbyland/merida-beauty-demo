@@ -7,6 +7,20 @@ ubicación y una simulación de reserva que prepara una consulta por WhatsApp.
 > La disponibilidad es ilustrativa. Esta versión no crea turnos ni guarda datos de
 > clientes.
 
+La prueba local de integración con Google Calendar está documentada en
+[`integration/README.md`](integration/README.md). Solo se muestra en localhost;
+requiere conectar el proyecto de Apps Script antes de registrar turnos reales
+en los calendarios de ensayo. La versión pública mantiene el flujo de portfolio.
+
+## Imágenes del estudio
+
+Las imágenes `local-merida-restored-v3.jpg` y `local-interior-restored-v3.jpg`
+son versiones retocadas con IA de las capturas originales de 449 px de ancho.
+Se retiraron los controles de Instagram y se reconstruyó detalle visual; no son
+fotografías originales de mayor resolución. Los originales `local-merida.jpg`
+y `local-interior.jpg` se conservan. Para uso comercial, priorizar las fotos
+originales que proporcione el estudio.
+
 ## Tecnologías
 
 - React 19 y Next.js 16

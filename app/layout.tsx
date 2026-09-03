@@ -40,6 +40,23 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Run before the browser restores a previous scroll position.
+              if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+              }
+              window.addEventListener('pageshow', function () {
+                if (!window.location.hash) {
+                  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                }
+              });
+            `,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- Static export uses pre-compressed local assets. */
 
 import { useMemo, useState, useSyncExternalStore } from "react";
+import { CalendarBooking } from "./CalendarBooking";
 
 type Category = "Manos" | "Pies" | "Cejas" | "Pestañas";
 
@@ -148,6 +149,9 @@ export function MeridaSite() {
 
   const availableProfessionals = selectedService.professionals;
   const selectedDate = dates.find((item) => item.iso === date) ?? dates[0];
+  // La integración de ensayo solo se muestra en esta computadora.
+  // La versión pública conserva el recorrido de portfolio hasta autorizar su publicación.
+  const calendarDemo = isClient && ["127.0.0.1", "localhost"].includes(window.location.hostname);
 
   function selectCategory(nextCategory: Category) {
     const firstService = services.find((service) => service.category === nextCategory);
@@ -229,10 +233,10 @@ export function MeridaSite() {
         <div className="hero-visual">
           <div className="hero-photo">
             <img
-              src="/local-merida.jpg"
+              src="/local-merida-restored-v3.jpg"
               alt="Recepción de MERIDA Beauty Studio"
-              width="449"
-              height="559"
+              width="1122"
+              height="1402"
               fetchPriority="high"
             />
           </div>
@@ -374,14 +378,21 @@ export function MeridaSite() {
             Elegí el servicio, la profesional y el horario que mejor se adapte a vos.
           </p>
           <ol>
-            <li><span>01</span> Elegí tu servicio</li>
-            <li><span>02</span> Seleccioná profesional</li>
-            <li><span>03</span> Encontrá tu horario</li>
+            {calendarDemo ? <>
+              <li><span>01</span> Elegí tu cita</li>
+              <li><span>02</span> Completá tus datos</li>
+            </> : <>
+              <li><span>01</span> Elegí tu servicio</li>
+              <li><span>02</span> Seleccioná profesional</li>
+              <li><span>03</span> Encontrá tu horario</li>
+            </>}
           </ol>
         </div>
 
         <div className="booking-card">
-          {confirmed ? (
+          {calendarDemo ? (
+            <CalendarBooking key={`${category}:${serviceName}:${professional}`} initialProfessional={professional} initialService={serviceName} />
+          ) : confirmed ? (
             <div className="confirmation" role="status" aria-live="polite">
               <div className="confirmation-icon" aria-hidden="true">✓</div>
               <p className="eyebrow">Solicitud preparada</p>
@@ -565,10 +576,10 @@ export function MeridaSite() {
       <section className="studio-section" id="estudio">
         <div className="studio-image">
           <img
-            src="/local-interior.jpg"
+            src="/local-interior-restored-v3.jpg"
             alt="Interior de MERIDA Beauty Studio"
-            width="449"
-            height="561"
+            width="1121"
+            height="1403"
             loading="lazy"
             decoding="async"
           />
