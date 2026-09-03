@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="csrf-token" content="__CSRF__"><title>MERIDA · Agenda de prueba</title><link rel="stylesheet" href="/admin.css"><script src="/admin.js" defer></script></head>
+<body><main>
+  <header><p class="eyebrow">MERIDA · Ensayo privado</p><h1>Solicitudes de turno</h1><p>Cuenta responsable: <strong>barbydigital.dev@gmail.com</strong></p><a href="http://127.0.0.1:3000/#reservar">Volver a la demo ↗</a></header>
+  <p class="notice">Solo calendarios PRUEBA de Ludmila y Pricila. No son turnos reales. Los WhatsApp se preparan para que vos los envíes.</p>
+  <p id="status" role="status" aria-live="polite">Comprobando conexión…</p>
+  <details id="setup"><summary>Conectar Google Calendar</summary>
+    <ol>
+      <li>Con Barby Digital, abrí <a href="https://script.google.com/home/start" target="_blank" rel="noreferrer">Google Apps Script</a> y creá un proyecto llamado <strong>MERIDA · Prueba de reservas</strong>.</li>
+      <li>Copiá el <a href="/Code.gs" target="_blank">código de conexión</a> completo en <strong>Código.gs</strong> y guardalo. <button type="button" id="copy-code">Copiar código</button></li>
+      <li>Elegí la función <strong>prepararPrueba</strong> y ejecutala. Google solicitará autorización para los calendarios y para enviar los avisos por correo. La función verifica las dos agendas de ensayo.</li>
+      <li>En el registro de ejecución aparece una <strong>clave de conexión</strong>. Copiala en el campo inferior. No la publiques ni la envíes por chat.</li>
+      <li>Elegí <strong>Implementar → Nueva implementación → Aplicación web</strong>, ejecutar como <strong>vos (Barby Digital)</strong>. El acceso del endpoint debe permitir solicitudes sin iniciar sesión (<strong>Cualquier usuario</strong>); el código exige la clave para cada operación y solo permite las dos agendas PRUEBA. Copiá su URL terminada en <strong>/exec</strong>.</li>
+    </ol>
+    <p>La clave se guarda únicamente en esta computadora y no se incorpora a la web pública. Esta conexión es para el ensayo local.</p>
+    <form id="connect"><label>URL de la aplicación web<input id="endpoint" type="url" required placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label><label>Clave de conexión<input id="secret" type="password" required minlength="40" autocomplete="off"></label><button>Verificar y conectar</button><p id="connect-status" role="status" aria-live="polite" hidden></p></form>
+  </details>
+  <section aria-labelledby="requests-title"><div class="toolbar"><h2 id="requests-title">Agenda de solicitudes</h2><button id="refresh" type="button">Actualizar</button></div><p>Los pendientes bloquean el horario hasta que los confirmes o rechaces. En esta primera prueba no vencen automáticamente.</p><div id="bookings"></div></section>
+</main></body></html>
